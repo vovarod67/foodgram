@@ -1,0 +1,40 @@
+version: '3'
+
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  db:
+    restart: unless-stopped
+    image: postgres:14
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  backend:
+    restart: unless-stopped
+    image: vovarod/foodgram_backend
+    env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - static:/app/collected_static
+      - media:/app/media
+  frontend:
+    env_file: .env
+    image: vovarod/foodgram_frontend
+    command: cp -r /app/build/. /static/
+    volumes:
+      - static:/static
+  gateway:
+    restart: unless-stopped
+    image: vovarod/foodgram_gateway
+    env_file: .env
+    depends_on:
+      - backend
+    ports:
+      - 127.0.0.1:8500:80
+    volumes:
+      - static:/static
+      - media:/media
