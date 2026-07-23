@@ -54,6 +54,12 @@ class Ingredient(models.Model):
         ordering = ('name',)
         verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        constraints = (
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='unique_ingredient_measurement_unit'
+            ),
+        )
 
     def __str__(self):
         return f'{self.name}-{self.measurement_unit}'
@@ -104,6 +110,19 @@ class Recipe(models.Model):
         verbose_name='Код короткой ссылки'
     )
 
+    class Meta:
+        ordering = ('-created_at',)
+        verbose_name = 'рецепт'
+        verbose_name_plural = 'Рецепты'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.short_code:
+            self.short_code = self.generate_short_code()
+        super().save(*args, **kwargs)
+
     @classmethod
     def generate_short_code(cls):
         while True:
@@ -113,19 +132,6 @@ class Recipe(models.Model):
             )
             if not cls.objects.filter(short_code=short_code).exists():
                 return short_code
-
-    def save(self, *args, **kwargs):
-        if not self.short_code:
-            self.short_code = self.generate_short_code()
-        super().save(*args, **kwargs)
-
-    class Meta:
-        ordering = ('-created_at',)
-        verbose_name = 'рецепт'
-        verbose_name_plural = 'Рецепты'
-
-    def __str__(self):
-        return self.name
 
 
 class RecipeIngredientAmount(models.Model):

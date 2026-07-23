@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Sum
-from djoser.views import UserViewSet
+from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -28,16 +28,23 @@ from .serializers import (
     FavoriteSerializer,
     ShoppingCartSerializer,
 )
-from .permissions import IsAuthorOrReadOnly, IsCurrentUserOrAdminOrReadOnly
+from .permissions import IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
 
 
 User = get_user_model()
 
 
-class CustomUserViewSet(UserViewSet):
-    queryset = User.objects.all()
-    permission_classes = (IsCurrentUserOrAdminOrReadOnly,)
+class UserViewSet(DjoserUserViewSet):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    @action(
+        detail=False,
+        methods=('get',),
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def me(self, request, *args, **kwargs):
+        return super().me(request, *args, **kwargs)
 
     @action(
         detail=False,

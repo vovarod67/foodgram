@@ -245,9 +245,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         errors = {}
-        image = self.initial_data.get('image', serializers.empty)
-        if image is not serializers.empty and not image:
-            errors['image'] = 'Поле изображения не должно быть пустым.'
         tags = attrs.get('tags')
         if not tags:
             errors['tags'] = (
@@ -269,6 +266,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         return attrs
+
+    def validate_image(self, image):
+        if not image:
+            raise serializers.ValidationError(
+                'Поле изображения не должно быть пустым.'
+            )
+        return image
 
     @staticmethod
     def add_ingredients(recipe, ingredients):
