@@ -116,6 +116,7 @@ DJOSER = {
 
 AUTHENTICATION_BACKENDS = (
     'djoser.auth_backends.LoginFieldBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 
